@@ -43,9 +43,22 @@ class NewVisitorTest(unittest.TestCase):
 
 		# there is a text box to add anotehr item.
 		# she enteres "use feathers to make a fly"
-		self.fail('finish the test!')
+		inputbox = self.browser.find_element_by_id('id_new_item')
+		inputbox.send_keys('Use peacock feathers to make fly')
+		inputbox.send_keys(Keys.ENTER)
+		time.sleep(1)
 
 		# page updates again, show both items in thel ist
+		table = self.browser.find_element_by_id('id_list_table')
+		rows = table.find_elements_by_tag_name('tr')
+		self.assertIn(
+			'1: Buy peacock feathers', [row.text for row in rows]
+		)
+		self.assertIn(
+			'2: Use peacock feathers to make fly', [row.text for row in rows]
+		)
+
+		self.fail('finish the test!')
 
 		# we wonder if site will remember her list.
 
