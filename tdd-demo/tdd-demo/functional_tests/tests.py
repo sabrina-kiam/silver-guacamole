@@ -29,6 +29,39 @@ class NewVisitorTest(LiveServerTestCase):
 					raise e
 				time.sleep(0.5)
 
+	def test_multiple_users_can_start_lists(self):
+		self.browser.get(self.live_server_url)
+		inputbox = self.browser.find_element_by_id('id_new_item')
+		inputbox.send_keys('Buy peacock feathers')
+		inputbox.send_keys(Keys.ENTER)
+
+		self.wait_for_row_in_list_table('1: Buy peacock feathers')
+
+		edith_list_url = self.browser.current_url
+		self.assertRegex(edith_list_url, '/lists/.+')
+
+		self.browser.quit()
+		self.browser = webdriver.Firefox()
+
+		# francis visits home page. no sign of edith list
+		self.browser.get(self.live_server_url)
+		page_text = self.browser.find_element_by_tag_name('body').text
+		self.assertNotIn('Buy peacock feathers', page_text)
+		self.assertNotIn('make a fly', page_text)
+
+		inputbox = self.browser.find_element_by_id('id_new_item')
+		inputbox.send_keys('Buy milk')
+		inputbox.send_keys(Keys.ENTER)
+		self.wait_for_row_in_list_table('1: Buy milk')
+
+		francis_list_url = self.browser.current_url
+		self.assertRegex(francis_list_url, '/lists/.+')
+		self.assertNotEqual(francis_list_url, edith_list_url)
+
+		page_text = self.browser.find_element_by_tag_name('body').text
+		self.assertNotIn('Buy peacock feathers', page_text)
+		self.assertIn('Buy milk', page_text)
+
 	def test_can_start_a_list_and_retrieve_it_later(self):
 		# We go to check out the homepage
 		self.browser.get(self.live_server_url)
@@ -64,8 +97,6 @@ class NewVisitorTest(LiveServerTestCase):
 		# page updates again, show both items in thel ist
 		self.wait_for_row_in_list_table('1: Buy peacock feathers')
 		self.wait_for_row_in_list_table('2: Use peacock feathers to make fly')
-
-		self.fail('finish the test!')
 
 		# we wonder if site will remember her list.
 
